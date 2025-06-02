@@ -2,7 +2,6 @@ import scipy.optimize._linesearch as sc
 import numpy.linalg as ln
 import numpy as np
 import pandas as pd
-from nary import *
 from loss import *
 from sklearn import metrics
 from dataclasses import dataclass
