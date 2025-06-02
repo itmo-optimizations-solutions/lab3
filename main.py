@@ -29,7 +29,7 @@ def SGD(
         k += 1
         if np.linalg.norm(gradient) ** 2 < ε or k > limit:
             break
-        print(func.predict(x, 0), func(x,batch))
+        print("predict, true: ", func.predict(x, 0), "MSE: ", func(x,batch))
     return x, k
 
 def wolfe_rule(
@@ -63,6 +63,4 @@ if __name__ == "__main__":
         y_pr = x[0] + row @ x[1:]
         targets_predict.append(y_pr)
     targets = test_data_func.targets.tolist()
-    # for i in range(0, len(targets)):
-    #     print(targets[i],targets_predict[i],abs(targets[i]-targets_predict[i]))
-    print(metrics.r2_score(targets, targets_predict))
+    print("r2 score:", metrics.r2_score(targets, targets_predict))
