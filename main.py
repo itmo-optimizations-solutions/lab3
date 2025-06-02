@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from nary import *
 from loss import *
-
+from sklearn import metrics
 from dataclasses import dataclass
 from prettytable import PrettyTable
 
@@ -12,38 +12,57 @@ np.seterr(over="ignore", invalid="ignore")
 
 def SGD(
     func: LossFunc,
-    batch_size: int = 1,
+    batch_size: int = 10,
     limit: float = 1e3,
     ε: float = 1e-6,
     error: float = 0.1,
 ) -> Tuple[Vector, int]:
-    x = np.ones(func.weights_size)
+    x = np.random.rand(func.weights_size)
     k = 0
     while True:
-        gradient = func.gradient(x, np.random.randint(0, func.rows_size, size=batch_size))
-        u = -gradient
-        x += u
+        batch = np.random.choice(func.rows_size, size=batch_size, replace=False)
+        gradient = func.gradient(x, batch)
+        d = -gradient
+        a = wolfe_rule(func, batch, x, d, α=0.5, c1=1e-4, c2=0.3)
+        a = error if a is None else a
+        x += a * d
         k += 1
         if np.linalg.norm(gradient) ** 2 < ε or k > limit:
             break
+        print(func.predict(x, 0), func(x,batch))
     return x, k
 
-def MSE(
-    features: Matrix,
-    targets: Vector,
-    weights: Vector,
-    batch: Vector) -> float:
-    loss = 0
-    m = len(batch)
-    for i in batch:
-        y_predict = weights[0] + features[i] @ weights[1:]
-        loss +=(targets[i] - y_predict) ** 2
-    loss /= m
-    return loss
+def wolfe_rule(
+    func: LossFunc,
+    batch : Vector,
+    x: Vector,
+    direction: Vector,
+    α: float,
+    c1: float,
+    c2: float,
+) -> float | None:
+    for _ in range(MAX_ITER_RULE):
+        if func(x + α * direction,batch) > func(x,batch) + c1 * α * np.dot(-direction, direction):
+            α *= 0.5
+        elif np.dot(func.gradient(x + α * direction,batch), direction) < c2 * np.dot(-direction, direction):
+            α *= 1.5
+        else:
+            return α
+    return None
+
+MAX_ITER_RULE = 800
 
 if __name__ == "__main__":
-    df = pd.read_csv("data/spambase.data", header=None)
-
-    func = LossFunc(df, MSE)
-
-    print(SGD(func))
+    df = pd.read_csv("data/Student_Performance.csv", header=None)
+    data_train, data_test = train_test_split(df, test_size=0.25, random_state=42)
+    test_data_func = LossFunc(data_test)
+    func = LossFunc(data_train)
+    x, _ = SGD(func)
+    targets_predict = []
+    for row in test_data_func.features:
+        y_pr = x[0] + row @ x[1:]
+        targets_predict.append(y_pr)
+    targets = test_data_func.targets.tolist()
+    # for i in range(0, len(targets)):
+    #     print(targets[i],targets_predict[i],abs(targets[i]-targets_predict[i]))
+    print(metrics.r2_score(targets, targets_predict))
