@@ -32,10 +32,25 @@ def get_a_by_learning(
     return error if α is None else α
 
 
-def gradient_descent(
-    func: NaryFunc,
+def find_direction(func, gradient, x, ε):
+    radius_area = ε ** 0.5
+    func_val = func(x)
+    for att in range(20):
+        random_multipliers = np.random.randint(-10, 11, x.shape) / 10.0
+        eps_array = radius_area * random_multipliers
+        if func(x + eps_array) < func_val:
+            x += eps_array
+            max_state = True
+            gradient = func.gradient(x)
+            break
+    return gradient
+
+def SGD(
+    func: LossFunc,
     start: Vector,
     learning: Learning,
+    regular: Regularization,
+    batch_size: int = 1,
     limit: float = 1e3,
     ε: float = 1e-6,
     error: float = 0.1,
@@ -49,16 +64,7 @@ def gradient_descent(
         max_state = False
 
         if np.allclose(gradient, 0):
-            radius_area = ε ** 0.5
-            func_val = func(x)
-            for att in range(20):
-                random_multipliers = np.random.randint(-10, 11, x.shape) / 10.0
-                eps_array = radius_area * random_multipliers
-                if func(x + eps_array) < func_val:
-                    x += eps_array
-                    max_state = True
-                    gradient = func.gradient(x)
-                    break
+            gradient = find_direction(func, gradient, x, ε)
 
         u = -gradient
         alpha = get_a_by_learning(learning, func, x, u, gradient, k, error)
@@ -263,16 +269,24 @@ INTERESTING = [
 ]
 
 if __name__ == "__main__":
-    descent = gradient_descent
-    func = NaryFunc(quadratic)
-    start = np.array([1.0, 5.0])
-    rule = constant(1.0)
-    print(example_table(func, start, descent))
-    x_min, g_count, h_count, steps, trajectory = descent(func, start, rule)
+    #descent = gradient_descent
+    #func = NaryFunc(quadratic)
+    #start = np.array([1.0, 5.0])
+    #rule = constant(0.9)
+    #print(example_table(func, start, descent))
+    #x_min, g_count, h_count, steps, trajectory = descent(func, start, rule)
     #plot_gradient(func, len(start) == 1, len(start) == 2, trajectory, name="Rosenbroke Function")
 
-    print("Current rule: " + str(rule).split('.')[0].split()[1])
-    print("Optimal x: " + str(x_min))
-    print("Gradient count: " + str(g_count))
-    print("Hessian count: " + str(h_count))
-    print("Steps: " + str(steps))
+    #print("Current rule: " + str(rule).split('.')[0].split()[1])
+    #print("Optimal x: " + str(x_min))
+    #print("Gradient count: " + str(g_count))
+    #print("Hessian count: " + str(h_count))
+    #print("Steps: " + str(steps))
+    # fetch dataset
+    df = pd.read_csv("data/spambase.data", header=None)
+
+    # data (as pandas dataframes)
+    X = df.iloc[:, :-1]
+    y = df.iloc[:, -1]
+
+    print(df.loc[10])
