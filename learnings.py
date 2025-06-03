@@ -95,8 +95,8 @@ def dichotomy_gen(a: float, b: float, eps: float = 1e-6) -> Rule:
 
 def dichotomy(
     func: LossFunc,
-    x: np.ndarray,
     batch: Vector,
+    x: Vector,
     direction: np.ndarray,
     a: float,
     b: float,

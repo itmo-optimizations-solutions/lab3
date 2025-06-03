@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 from loss import *
 from learnings import *
+from mse import *
 from sklearn import metrics
 from dataclasses import dataclass
 from prettytable import PrettyTable
@@ -33,16 +34,19 @@ def SGD(
         print("predict, true: ", func.predict(x, 0), "MSE: ", func(x,batch))
     return x, k
 
-
-
 MAX_ITER_RULE = 800
 
 if __name__ == "__main__":
     df = pd.read_csv("data/Student_Performance.csv", header=None)
     data_train, data_test = train_test_split(df, test_size=0.25, random_state=42)
-    test_data_func = LossFunc(data_test)
-    func = LossFunc(data_train)
-    x, _ = SGD(func, wolfe_rule_gen(0.5, 1e-4, 0.3))
+    test_data_func = LossFunc(data_test, MSE)
+    func = LossFunc(data_train, MSE)
+
+    #x, _ = SGD(func, wolfe_rule_gen(0.5, 1e-4, 0.3))
+    #x, _ = SGD(func, armijo_rule_gen(0.3, 0.5, 1e-3))
+    #x, _ = SGD(func, dichotomy_gen(0.1, 0.8))
+    x, _ = SGD(func, constant(0.00013))
+
     targets_predict = []
     for row in test_data_func.features:
         y_pr = x[0] + row @ x[1:]
