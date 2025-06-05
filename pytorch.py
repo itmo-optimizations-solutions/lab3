@@ -8,15 +8,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import r2_score
 from prettytable import PrettyTable
 
-# :NOTE: refactor and remove (written by LLM)
-
 df = pd.read_csv("data/Student_Performance.csv", header=None)
 X = df.iloc[:, :-1].values
 y = df.iloc[:, -1].values.reshape(-1, 1)
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
-
-# :NOTE: magic (??)
 
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
@@ -41,9 +37,7 @@ class RegressionNN(nn.Module):
         return self.fc3(x)
 
 input_size = X_train.shape[1]
-loss_f = nn.MSELoss()  # функция потерь
-
-# :NOTE: у Momentum и Nesterov сейчас другие параметры потому что с 0.01 они не работают
+loss_f = nn.MSELoss()
 
 optimizers = {
     "SGD": optim.SGD,
@@ -62,7 +56,6 @@ for opt_name, opt_func in optimizers.items():
     model = RegressionNN(input_size)
     optimizer = opt_func(model.parameters())
 
-    # само обучение
     epochs = 100
     for epoch in range(epochs):
         optimizer.zero_grad()
