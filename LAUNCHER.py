@@ -598,7 +598,6 @@ if __name__ == "__main__":
         print("Запуск анализа momentum...")
         momentum_results = momentum_analysis(data_train, data_test, momentum_values_to_test, attempts=3)
 
-        # Вывод результатов
         print("\n" + "=" * 80)
         print("ДЕТАЛЬНОЕ СРАВНЕНИЕ MOMENTUM VALUES")
         print("=" * 80)
